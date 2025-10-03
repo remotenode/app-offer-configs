@@ -89,15 +89,9 @@ export interface LogEntry {
 }
 
 
-export interface CacheEntry<T> {
-  data: T;
-  expires: number;
-  created: number;
-}
 
 // Environment variables interface
 export interface Env {
-  CONFIG_CACHE: KVNamespace;
   CLOUDFLARE_API_TOKEN: string;
   FIREBASE_SERVICE_ACCOUNT_KEY: string;
   APPSFLYER_API_TOKEN: string;

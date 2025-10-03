@@ -5,21 +5,12 @@ compatibility_flags = ["nodejs_compat"]
 
 [env.development]
 name = "app-offer-config-dev"
-kv_namespaces = [
-  { binding = "CONFIG_CACHE", id = "dev-config-cache", preview_id = "dev-config-cache-preview" }
-]
 
 [env.staging]
 name = "app-offer-config-staging"
-kv_namespaces = [
-  { binding = "CONFIG_CACHE", id = "staging-config-cache", preview_id = "staging-config-cache-preview" }
-]
 
 [env.production]
 name = "app-offer-config-prod"
-kv_namespaces = [
-  { binding = "CONFIG_CACHE", id = "prod-config-cache", preview_id = "prod-config-cache-preview" }
-]
 
 # Secrets (set via wrangler secret put)
 # CLOUDFLARE_API_TOKEN
