@@ -3,6 +3,7 @@ export interface Env {
   APPSFLYER_API_TOKEN?: string;
   APPSFLYER_APP_ID?: string;
   APPSFLYER_BASE_URL?: string;
+  DB: D1Database;
 }
 
 export interface AppsFlyerEventData {
@@ -85,4 +86,25 @@ export interface AppsFlyerApiResponse {
   success: boolean;
   message?: string;
   data?: any;
+}
+
+export interface MobilePhoneRequest {
+  id?: number;
+  phone_number: string;
+  country_code: string;
+  request_type: 'offer_config' | 'notification' | 'support' | 'other';
+  user_agent?: string;
+  ip_address?: string;
+  timestamp: string;
+  status: 'pending' | 'processed' | 'failed';
+  metadata?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MobilePhoneRequestResponse {
+  success: boolean;
+  message?: string;
+  data?: MobilePhoneRequest;
+  request_id?: number;
 }
