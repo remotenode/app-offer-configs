@@ -1,0 +1,38 @@
+name = "app-config-service"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "app-config-db"
+database_id = "your-database-id-here"
+
+# Environment variables
+[vars]
+FIREBASE_PROJECT_ID = "your-firebase-project-id"
+CONFIG_ENDPOINT_SECRET = "your-secret-key"
+
+# Secrets (set via wrangler secret put)
+# FIREBASE_PRIVATE_KEY
+# FIREBASE_CLIENT_EMAIL
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Development configuration
+[env.development]
+name = "app-config-service-dev"
+
+[env.development.vars]
+FIREBASE_PROJECT_ID = "your-dev-firebase-project-id"
+CONFIG_ENDPOINT_SECRET = "your-dev-secret-key"
+
+# Production configuration
+[env.production]
+name = "app-config-service-prod"
+
+[env.production.vars]
+FIREBASE_PROJECT_ID = "your-prod-firebase-project-id"
+CONFIG_ENDPOINT_SECRET = "your-prod-secret-key"
