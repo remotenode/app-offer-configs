@@ -1,0 +1,35 @@
+{
+  "name": "app-offer-configs",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for app offer configuration management",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "api",
+    "mobile",
+    "app-config"
+  ],
+  "author": "Your Organization",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@types/node": "^20.10.0",
+    "eslint": "^8.55.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.19.0"
+  },
+  "dependencies": {
+    "marked": "^11.1.1"
+  }
+}

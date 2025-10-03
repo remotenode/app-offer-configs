@@ -1,0 +1,19 @@
+name = "app-offer-configs"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+
+[env.production]
+name = "app-offer-configs-prod"
+
+[env.staging]
+name = "app-offer-configs-staging"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+
+# Secrets (set via wrangler secret put)
+# APPSFLYER_API_TOKEN
+# FIREBASE_PROJECT_ID
+# FIREBASE_PRIVATE_KEY
+# FIREBASE_CLIENT_EMAIL
