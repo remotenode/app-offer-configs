@@ -1,4 +1,4 @@
-import { Request, Response } from '@cloudflare/workers-types';
+// Request and Response are available globally in Cloudflare Workers
 import { Env } from '../types';
 
 export class HealthHandler {

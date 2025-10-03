@@ -1,4 +1,4 @@
-import { Request, Response } from '@cloudflare/workers-types';
+// Request and Response are available globally in Cloudflare Workers
 import { ConfigRequest, ConfigResponse, Env, LogEntry } from '../types';
 import { validateConfigRequest } from '../utils/validation';
 import { ConfigService } from '../services/config';
