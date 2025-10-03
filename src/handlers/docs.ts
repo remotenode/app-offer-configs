@@ -1,8 +1,14 @@
 import { Env } from '../types';
 import { marked } from 'marked';
+import { ResponseBuilder } from '../core/response-builder';
+import { ConfigManager } from '../core/config-manager';
 
 export class DocsHandler {
-  constructor(private env: Env) {}
+  private configManager: ConfigManager;
+
+  constructor(private env: Env) {
+    this.configManager = new ConfigManager(env);
+  }
 
   async handleDocsIndex(): Promise<Response> {
     const html = `
@@ -64,12 +70,7 @@ export class DocsHandler {
 </body>
 </html>`;
 
-    return new Response(html, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return ResponseBuilder.html(html, 'App Offer Configs - Documentation');
   }
 
   async handleSwaggerUI(): Promise<Response> {
@@ -117,12 +118,7 @@ export class DocsHandler {
 </body>
 </html>`;
 
-    return new Response(html, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return ResponseBuilder.html(html, 'App Offer Configs - Documentation');
   }
 
   async handleReDoc(): Promise<Response> {
@@ -143,12 +139,7 @@ export class DocsHandler {
 </body>
 </html>`;
 
-    return new Response(html, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return ResponseBuilder.html(html, 'App Offer Configs - Documentation');
   }
 
   async handleOpenAPISpec(): Promise<Response> {
@@ -572,12 +563,7 @@ export class DocsHandler {
 </body>
 </html>`;
 
-    return new Response(html, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return ResponseBuilder.html(html, 'App Offer Configs - Documentation');
   }
 
   async handleMarkdownFile(filePath: string): Promise<Response> {
@@ -595,15 +581,8 @@ export class DocsHandler {
         },
       });
     } catch (error) {
-      return new Response(JSON.stringify({
-        error: 'Failed to load markdown file',
+      return ResponseBuilder.error('Failed to load markdown file', 500, {
         message: error instanceof Error ? error.message : 'Unknown error',
-      }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
       });
     }
   }

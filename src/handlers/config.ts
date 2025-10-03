@@ -1,7 +1,13 @@
 import { Env, ConfigRequest, ConfigResponse, ValidationResult } from '../types';
+import { ResponseBuilder } from '../core/response-builder';
+import { ConfigManager } from '../core/config-manager';
 
 export class ConfigHandler {
-  constructor(private env: Env) {}
+  private configManager: ConfigManager;
+
+  constructor(private env: Env) {
+    this.configManager = new ConfigManager(env);
+  }
 
   validateRequest(request: Request): ValidationResult {
     try {
@@ -179,15 +185,7 @@ export class ConfigHandler {
         environment: env.ENVIRONMENT || 'development',
       };
 
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error('Error processing config request:', error);
       
@@ -201,25 +199,13 @@ export class ConfigHandler {
         environment: env.ENVIRONMENT || 'development',
       };
 
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
+      return ResponseBuilder.error('Failed to process request', 500, {
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
   async handleOptionsRequest(): Promise<Response> {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
+    return ResponseBuilder.cors();
   }
 }

@@ -47,11 +47,142 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
+// src/core/response-builder.ts
+var ResponseBuilder = class {
+  static success(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  static error(message, status = 400, details) {
+    const errorResponse = {
+      ok: false,
+      error: message,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      ...details
+    };
+    return new Response(JSON.stringify(errorResponse), {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  static html(content, title) {
+    const html2 = title ? this.wrapInHTML(content, title) : content;
+    return new Response(html2, {
+      headers: {
+        "Content-Type": "text/html",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  static cors() {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400"
+      }
+    });
+  }
+  static wrapInHTML(content, title) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${title}</h1>
+        </div>
+        <div class="content">
+            ${content}
+        </div>
+    </div>
+</body>
+</html>`;
+  }
+};
+__name(ResponseBuilder, "ResponseBuilder");
+
+// src/core/config-manager.ts
+var ConfigManager = class {
+  env;
+  constructor(env) {
+    this.env = env;
+  }
+  get environment() {
+    return this.env.ENVIRONMENT || "development";
+  }
+  get isDevelopment() {
+    return this.environment === "development";
+  }
+  get isProduction() {
+    return this.environment === "production";
+  }
+  get appsflyerToken() {
+    return this.env.APPSFLYER_API_TOKEN;
+  }
+  get firebaseProjectId() {
+    return this.env.FIREBASE_PROJECT_ID;
+  }
+  get firebasePrivateKey() {
+    return this.env.FIREBASE_PRIVATE_KEY;
+  }
+  get firebaseClientEmail() {
+    return this.env.FIREBASE_CLIENT_EMAIL;
+  }
+  validate() {
+    const missing = [];
+    if (this.isProduction) {
+      if (!this.appsflyerToken)
+        missing.push("APPSFLYER_API_TOKEN");
+      if (!this.firebaseProjectId)
+        missing.push("FIREBASE_PROJECT_ID");
+      if (!this.firebasePrivateKey)
+        missing.push("FIREBASE_PRIVATE_KEY");
+      if (!this.firebaseClientEmail)
+        missing.push("FIREBASE_CLIENT_EMAIL");
+    }
+    return {
+      valid: missing.length === 0,
+      missing
+    };
+  }
+  getApiConfig() {
+    return {
+      version: "1.0.0",
+      environment: this.environment,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+};
+__name(ConfigManager, "ConfigManager");
+
 // src/handlers/config.ts
 var ConfigHandler = class {
   constructor(env) {
     this.env = env;
+    this.configManager = new ConfigManager(env);
   }
+  configManager;
   validateRequest(request) {
     try {
       if (!request.headers.get("content-type")?.includes("application/json")) {
@@ -223,15 +354,7 @@ var ConfigHandler = class {
         version: "1.0.0",
         environment: env.ENVIRONMENT || "development"
       };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization"
-        }
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error("Error processing config request:", error);
       const errorResponse = {
@@ -243,25 +366,13 @@ var ConfigHandler = class {
         version: "1.0.0",
         environment: env.ENVIRONMENT || "development"
       };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
+      return ResponseBuilder.error("Failed to process request", 500, {
+        message: error instanceof Error ? error.message : "Unknown error"
       });
     }
   }
   async handleOptionsRequest() {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Max-Age": "86400"
-      }
-    });
+    return ResponseBuilder.cors();
   }
 };
 __name(ConfigHandler, "ConfigHandler");
@@ -270,8 +381,10 @@ __name(ConfigHandler, "ConfigHandler");
 var HealthHandler = class {
   constructor(env) {
     this.env = env;
+    this.configManager = new ConfigManager(env);
   }
   startTime = Date.now();
+  configManager;
   async handleHealthCheck(request, env) {
     try {
       const response = {
@@ -292,13 +405,7 @@ var HealthHandler = class {
           }
         }
       };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error("Health check error:", error);
       const errorResponse = {
@@ -315,13 +422,7 @@ var HealthHandler = class {
           }
         }
       };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.error("Health check failed", 500);
     }
   }
   async handleReadinessCheck(request, env) {
@@ -343,13 +444,7 @@ var HealthHandler = class {
           }
         }
       };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error("Readiness check error:", error);
       const errorResponse = {
@@ -365,13 +460,7 @@ var HealthHandler = class {
           }
         }
       };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 503,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.error("Service not ready", 503);
     }
   }
   async handleLivenessCheck(request, env) {
@@ -384,13 +473,7 @@ var HealthHandler = class {
         uptime: Date.now() - this.startTime,
         checks: {}
       };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error("Liveness check error:", error);
       const errorResponse = {
@@ -401,13 +484,7 @@ var HealthHandler = class {
         uptime: Date.now() - this.startTime,
         checks: {}
       };
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return ResponseBuilder.error("Health check failed", 500);
     }
   }
 };
@@ -2444,7 +2521,9 @@ var lexer = _Lexer.lex;
 var DocsHandler = class {
   constructor(env) {
     this.env = env;
+    this.configManager = new ConfigManager(env);
   }
+  configManager;
   async handleDocsIndex() {
     const html2 = `
 <!DOCTYPE html>
@@ -2504,12 +2583,7 @@ var DocsHandler = class {
     </div>
 </body>
 </html>`;
-    return new Response(html2, {
-      headers: {
-        "Content-Type": "text/html",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
+    return ResponseBuilder.html(html2, "App Offer Configs - Documentation");
   }
   async handleSwaggerUI() {
     const html2 = `
@@ -2555,12 +2629,7 @@ var DocsHandler = class {
     <\/script>
 </body>
 </html>`;
-    return new Response(html2, {
-      headers: {
-        "Content-Type": "text/html",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
+    return ResponseBuilder.html(html2, "App Offer Configs - Documentation");
   }
   async handleReDoc() {
     const html2 = `
@@ -2579,12 +2648,7 @@ var DocsHandler = class {
     <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.3/bundles/redoc.standalone.js"><\/script>
 </body>
 </html>`;
-    return new Response(html2, {
-      headers: {
-        "Content-Type": "text/html",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
+    return ResponseBuilder.html(html2, "App Offer Configs - Documentation");
   }
   async handleOpenAPISpec() {
     const openApiSpec = {
@@ -3004,12 +3068,7 @@ var DocsHandler = class {
     </div>
 </body>
 </html>`;
-    return new Response(html2, {
-      headers: {
-        "Content-Type": "text/html",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
+    return ResponseBuilder.html(html2, "App Offer Configs - Documentation");
   }
   async handleMarkdownFile(filePath) {
     try {
@@ -3023,15 +3082,8 @@ var DocsHandler = class {
         }
       });
     } catch (error) {
-      return new Response(JSON.stringify({
-        error: "Failed to load markdown file",
+      return ResponseBuilder.error("Failed to load markdown file", 500, {
         message: error instanceof Error ? error.message : "Unknown error"
-      }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
       });
     }
   }
@@ -3077,278 +3129,167 @@ To implement this properly, store markdown files in a KV store or R2 bucket and 
 };
 __name(DocsHandler, "DocsHandler");
 
+// src/core/router.ts
+var Router = class {
+  routes = [];
+  configHandler;
+  healthHandler;
+  docsHandler;
+  constructor(env) {
+    this.configHandler = new ConfigHandler(env);
+    this.healthHandler = new HealthHandler(env);
+    this.docsHandler = new DocsHandler(env);
+    this.setupRoutes();
+  }
+  setupRoutes() {
+    this.addRoute("POST", "/api/v1/config", this.configHandler.handleConfigRequest.bind(this.configHandler));
+    this.addRoute("OPTIONS", "/api/v1/config", this.configHandler.handleOptionsRequest.bind(this.configHandler));
+    this.addRoute("GET", "/health", this.healthHandler.handleHealthCheck.bind(this.healthHandler));
+    this.addRoute("GET", "/health/ready", this.healthHandler.handleReadinessCheck.bind(this.healthHandler));
+    this.addRoute("GET", "/health/live", this.healthHandler.handleLivenessCheck.bind(this.healthHandler));
+    this.addRoute("GET", "/docs", this.docsHandler.handleDocsIndex.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/swagger", this.docsHandler.handleSwaggerUI.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/redoc", this.docsHandler.handleReDoc.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/openapi.json", this.docsHandler.handleOpenAPISpec.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/markdown", this.docsHandler.handleMarkdownViewer.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/markdown/", this.docsHandler.handleMarkdownViewer.bind(this.docsHandler));
+    this.addRoute("GET", "/docs/markdown/requirements", () => this.docsHandler.handleMarkdownFile("requirements/app-requirements.md"));
+    this.addRoute("GET", "/docs/markdown/configuration", () => this.docsHandler.handleMarkdownFile("configuration/config-request.md"));
+    this.addRoute("GET", "/docs/markdown/notifications", () => this.docsHandler.handleMarkdownFile("notifications/push-notifications.md"));
+    this.addRoute("GET", "/docs/markdown/user-experience", () => this.docsHandler.handleMarkdownFile("user-experience/user-scenarios.md"));
+    this.addRoute("GET", "/", this.handleRoot.bind(this));
+  }
+  addRoute(method, path, handler) {
+    this.routes.push({ method, path, handler });
+  }
+  async handleRequest(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+    const route = this.routes.find((r) => r.path === path && r.method === method);
+    if (route) {
+      try {
+        return await route.handler(request, env);
+      } catch (error) {
+        return this.handleError(error);
+      }
+    }
+    return this.handleNotFound(path);
+  }
+  async handleRoot(request, env) {
+    return new Response(JSON.stringify({
+      name: "App Offer Configuration API",
+      version: "1.0.0",
+      environment: env.ENVIRONMENT || "development",
+      endpoints: {
+        config: "POST /api/v1/config",
+        health: "GET /health",
+        readiness: "GET /health/ready",
+        liveness: "GET /health/live",
+        docs: "GET /docs",
+        swagger: "GET /docs/swagger",
+        redoc: "GET /docs/redoc",
+        openapi: "GET /docs/openapi.json",
+        markdown: "GET /docs/markdown"
+      },
+      documentation: "https://github.com/your-org/app-offer-config-worker"
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  handleNotFound(path) {
+    return new Response(JSON.stringify({
+      error: "Not found",
+      message: `The requested resource ${path} was not found`,
+      availableEndpoints: [
+        "POST /api/v1/config",
+        "GET /health",
+        "GET /health/ready",
+        "GET /health/live",
+        "GET /docs",
+        "GET /docs/swagger",
+        "GET /docs/redoc",
+        "GET /docs/openapi.json",
+        "GET /docs/markdown",
+        "GET /"
+      ]
+    }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  handleError(error) {
+    console.error("Unhandled error in router:", error);
+    return new Response(JSON.stringify({
+      error: "Internal server error",
+      message: "An unexpected error occurred",
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+};
+__name(Router, "Router");
+
+// src/core/middleware.ts
+var MiddlewareManager = class {
+  middlewares = [];
+  add(middleware) {
+    this.middlewares.push(middleware);
+  }
+  async execute(context) {
+    for (const middleware of this.middlewares) {
+      const response = await middleware(context);
+      if (response) {
+        return response;
+      }
+    }
+    return null;
+  }
+};
+__name(MiddlewareManager, "MiddlewareManager");
+var corsMiddleware = /* @__PURE__ */ __name(async (context) => {
+  if (context.method === "OPTIONS") {
+    return ResponseBuilder.cors();
+  }
+  return null;
+}, "corsMiddleware");
+var loggingMiddleware = /* @__PURE__ */ __name(async (context) => {
+  console.log(`${context.method} ${context.path} - ${(/* @__PURE__ */ new Date()).toISOString()}`);
+  return null;
+}, "loggingMiddleware");
+
 // src/index.ts
 var src_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
-    const configHandler = new ConfigHandler(env);
-    const healthHandler = new HealthHandler(env);
-    const docsHandler = new DocsHandler(env);
-    try {
-      switch (path) {
-        case "/api/v1/config":
-          if (method === "POST") {
-            const validation = configHandler.validateRequest(request);
-            if (!validation.valid) {
-              return new Response(JSON.stringify({
-                ok: false,
-                message: validation.error
-              }), {
-                status: 400,
-                headers: {
-                  "Content-Type": "application/json",
-                  "Access-Control-Allow-Origin": "*"
-                }
-              });
-            }
-            return await configHandler.handleConfigRequest(request, env);
-          } else if (method === "OPTIONS") {
-            return await configHandler.handleOptionsRequest();
-          } else {
-            return new Response(JSON.stringify({
-              ok: false,
-              message: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-              }
-            });
-          }
-        case "/health":
-          if (method === "GET") {
-            return await healthHandler.handleHealthCheck(request, env);
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/health/ready":
-          if (method === "GET") {
-            return await healthHandler.handleReadinessCheck(request, env);
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/health/live":
-          if (method === "GET") {
-            return await healthHandler.handleLivenessCheck(request, env);
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs":
-          if (method === "GET") {
-            return await docsHandler.handleDocsIndex();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/swagger":
-          if (method === "GET") {
-            return await docsHandler.handleSwaggerUI();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/redoc":
-          if (method === "GET") {
-            return await docsHandler.handleReDoc();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/openapi.json":
-          if (method === "GET") {
-            return await docsHandler.handleOpenAPISpec();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownViewer();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown/":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownViewer();
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown/requirements":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownFile("requirements/app-requirements.md");
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown/configuration":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownFile("configuration/config-request.md");
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown/notifications":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownFile("notifications/push-notifications.md");
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/docs/markdown/user-experience":
-          if (method === "GET") {
-            return await docsHandler.handleMarkdownFile("user-experience/user-scenarios.md");
-          } else {
-            return new Response(JSON.stringify({
-              error: "Method not allowed"
-            }), {
-              status: 405,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            });
-          }
-        case "/":
-          return new Response(JSON.stringify({
-            name: "App Offer Configuration API",
-            version: "1.0.0",
-            environment: env.ENVIRONMENT || "development",
-            endpoints: {
-              config: "POST /api/v1/config",
-              health: "GET /health",
-              readiness: "GET /health/ready",
-              liveness: "GET /health/live",
-              docs: "GET /docs",
-              swagger: "GET /docs/swagger",
-              redoc: "GET /docs/redoc",
-              openapi: "GET /docs/openapi.json",
-              markdown: "GET /docs/markdown"
-            },
-            documentation: "https://github.com/your-org/app-offer-config-worker"
-          }), {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          });
-        default:
-          return new Response(JSON.stringify({
-            error: "Not found",
-            message: `The requested resource ${path} was not found`,
-            availableEndpoints: [
-              "POST /api/v1/config",
-              "GET /health",
-              "GET /health/ready",
-              "GET /health/live",
-              "GET /docs",
-              "GET /docs/swagger",
-              "GET /docs/redoc",
-              "GET /docs/openapi.json",
-              "GET /docs/markdown",
-              "GET /"
-            ]
-          }), {
-            status: 404,
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*"
-            }
-          });
-      }
-    } catch (error) {
-      console.error("Unhandled error in worker:", error);
-      return new Response(JSON.stringify({
-        error: "Internal server error",
-        message: "An unexpected error occurred",
-        timestamp: (/* @__PURE__ */ new Date()).toISOString()
-      }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+    const middlewareManager = new MiddlewareManager();
+    middlewareManager.add(loggingMiddleware);
+    middlewareManager.add(corsMiddleware);
+    const middlewareResponse = await middlewareManager.execute({
+      request,
+      env,
+      path,
+      method
+    });
+    if (middlewareResponse) {
+      return middlewareResponse;
     }
+    const router = new Router(env);
+    return await router.handleRequest(request, env);
   }
 };
 

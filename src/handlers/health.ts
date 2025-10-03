@@ -1,9 +1,14 @@
 import { Env, HealthResponse } from '../types';
+import { ResponseBuilder } from '../core/response-builder';
+import { ConfigManager } from '../core/config-manager';
 
 export class HealthHandler {
   private startTime = Date.now();
+  private configManager: ConfigManager;
 
-  constructor(private env: Env) {}
+  constructor(private env: Env) {
+    this.configManager = new ConfigManager(env);
+  }
 
   async handleHealthCheck(request: Request, env: Env): Promise<Response> {
     try {
@@ -26,13 +31,7 @@ export class HealthHandler {
         },
       };
 
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error('Health check error:', error);
       
@@ -51,13 +50,7 @@ export class HealthHandler {
         },
       };
 
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.error('Health check failed', 500);
     }
   }
 
@@ -82,13 +75,7 @@ export class HealthHandler {
         },
       };
 
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error('Readiness check error:', error);
       
@@ -106,13 +93,7 @@ export class HealthHandler {
         },
       };
 
-      return new Response(JSON.stringify(errorResponse), {
-        status: 503,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.error('Service not ready', 503);
     }
   }
 
@@ -128,13 +109,7 @@ export class HealthHandler {
         checks: {},
       };
 
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.success(response);
     } catch (error) {
       console.error('Liveness check error:', error);
       
@@ -147,13 +122,7 @@ export class HealthHandler {
         checks: {},
       };
 
-      return new Response(JSON.stringify(errorResponse), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return ResponseBuilder.error('Health check failed', 500);
     }
   }
 }
