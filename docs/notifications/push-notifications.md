@@ -83,16 +83,16 @@ https://embed.figma.com/design/FeBnHuFUJBa2mv0t68d314/Notification-icon?node-id=
         
         ```json
         {
-        	"message":{
-        		"token":"bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
-        		"notification":{
-        			"title":"Great offer!",
-        			"body":"play now"
-        		},
-        		"data" : {
-        			"url" : "https://example.com/"
-        		}
-        	}
+          "message": {
+            "token": "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
+            "notification": {
+              "title": "Great offer!",
+              "body": "play now"
+            },
+            "data": {
+              "url": "https://example.com/"
+            }
+          }
         }
         ```
         

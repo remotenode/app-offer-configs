@@ -30,6 +30,7 @@
     "wrangler": "^3.19.0"
   },
   "dependencies": {
-    "marked": "^11.1.1"
+    "marked": "^11.1.1",
+    "@types/marked": "^6.0.0"
   }
 }

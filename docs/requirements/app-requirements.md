@@ -51,35 +51,24 @@ GAID/IDFA тестового устройства должен быть доба
 
 В качестве тестовой трекинговой ссылки используется ссылка следующего вида:
 
-```json
+```
 https://app.appsflyer.com/com.example.app?pid=Test%20Source&c=testsub_testsub2_testsub_testsub_testsub_testsub_testsub_testsub1%20%23extra&siteid=test&adset=testsub&af_adset=testsub3&af_c_id=testsub4&agency=Test%20Agency&af_sub1=testextra2&af_sub2=testextra3&af_sub3=testextra4&af_sub4=testextra5&af_sub5=testextra6&is_retargeting=true
 ```
 
 - Либо используется Onelink ссылка с аналогичным набором параметров:
     
-    ```json
+    ```
     campaign = testsub_testsub2_testsub_testsub_testsub_testsub_testsub_testsub1 #extra
-    
     adset = testsub
-    
     af_adset = testsub3
-    
     campaign_id = testsub4
-    
     media_source = Test Source
-    
     af_sub1 = testextra2
-    
     af_sub2 = testextra3
-    
     af_sub3 = testextra4
-    
     af_sub4 = testextra5
-    
     af_sub5 = testextra6
-    
     agency = Test Agency
-    
     is_retargeting = true
     ```
     

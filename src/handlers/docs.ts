@@ -1,4 +1,5 @@
 import { Env } from '../types';
+import { marked } from 'marked';
 
 export class DocsHandler {
   constructor(private env: Env) {}

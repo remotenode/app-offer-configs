@@ -48,31 +48,31 @@ https://dev.appsflyer.com/hc/docs/conversion-data-unity
 
 ```json
 {
-	"adset": "s1s3",
-	"af_adset": "mm3",
-	"adgroup": "s1s3",
-	"campaign_id": "6068535534218",
-	"af_status": "Non-organic",
-	"agency": "Test",
-	"af_sub3": null,
-	"af_siteid": null,
-	"adset_id": "6073532011618",
-	"is_fb": true,
-	"is_first_launch": true,
-	"click_time": "2017-07-18 12:55:05",
-	"iscache": false,
-	"ad_id": "6074245540018",
-	"af_sub1": "439223",
-	"campaign": "Comp_22_GRTRMiOS_111123212_US_iOS_GSLTS_wafb unlim access",
-	"is_paid": true,
-	"af_sub4": "01",
-	"adgroup_id": "6073532011418",
-	"is_mobile_data_terms_signed": true,
-	"af_channel": "Facebook",
-	"af_sub5": null,
-	"media_source": "Facebook Ads",
-	"install_time": "2017-07-19 08:06:56.189",
-	"af_sub2": null
+  "adset": "s1s3",
+  "af_adset": "mm3",
+  "adgroup": "s1s3",
+  "campaign_id": "6068535534218",
+  "af_status": "Non-organic",
+  "agency": "Test",
+  "af_sub3": null,
+  "af_siteid": null,
+  "adset_id": "6073532011618",
+  "is_fb": true,
+  "is_first_launch": true,
+  "click_time": "2017-07-18 12:55:05",
+  "iscache": false,
+  "ad_id": "6074245540018",
+  "af_sub1": "439223",
+  "campaign": "Comp_22_GRTRMiOS_111123212_US_iOS_GSLTS_wafb unlim access",
+  "is_paid": true,
+  "af_sub4": "01",
+  "adgroup_id": "6073532011418",
+  "is_mobile_data_terms_signed": true,
+  "af_channel": "Facebook",
+  "af_sub5": null,
+  "media_source": "Facebook Ads",
+  "install_time": "2017-07-19 08:06:56.189",
+  "af_sub2": null
 }
 ```
 
@@ -99,7 +99,7 @@ https://dev.appsflyer.com/hc/docs/conversion-data-unity
 
 ```json
 {
-	"af_id": "1688042316289-7152592750959506765"
+  "af_id": "1688042316289-7152592750959506765"
 }
 ```
 
@@ -116,7 +116,7 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"bundle_id": "com.example.app"
+  "bundle_id": "com.example.app"
 }
 ```
 
@@ -131,7 +131,7 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"os": "Android"
+  "os": "Android"
 }
 ```
 
@@ -150,11 +150,13 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"store_id": "com.example.app"
+  "store_id": "com.example.app"
 }
+```
 
+```json
 {
-	"store_id": "id643200239"
+  "store_id": "id643200239"
 }
 ```
 
@@ -166,7 +168,7 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"locale": "En"
+  "locale": "En"
 }
 ```
 
@@ -185,7 +187,7 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"push_token": "dl28EJCAT4a7UNl86egX-U:APA91bEC1a5aGJL8ZyQHlm-B9togw60MLWP4_zU0ExSXLSa_HiL82Iurj0d-1zJmkMdUcvgCRXTrXtbWQHxmJh49BibLiqZVXPNyrCdZW-_ROTt98f0WCLtt531RYPhWSDOkykcaykE3"
+  "push_token": "dl28EJCAT4a7UNl86egX-U:APA91bEC1a5aGJL8ZyQHlm-B9togw60MLWP4_zU0ExSXLSa_HiL82Iurj0d-1zJmkMdUcvgCRXTrXtbWQHxmJh49BibLiqZVXPNyrCdZW-_ROTt98f0WCLtt531RYPhWSDOkykcaykE3"
 }
 ```
 
@@ -195,7 +197,7 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"firebase_project_id": "8934278530"
+  "firebase_project_id": "8934278530"
 }
 ```
 
@@ -205,43 +207,70 @@ Bundle ID и Store ID для iOS приложений различаются
 
 ```json
 {
-	"adset": "s1s3",
-	"af_adset": "mm3",
-	"adgroup": "s1s3",
-	"campaign_id": "6068535534218",
-	"af_status": "Non-organic",
-	"agency": "Test",
-	"af_sub3": null,
-	"af_siteid": null,
-	"adset_id": "6073532011618",
-	"is_fb": true,
-	"is_first_launch": true,
-	"click_time": "2017-07-18 12:55:05",
-	"iscache": false,
-	"ad_id": "6074245540018",
-	"af_sub1": "439223",
-	"campaign": "Comp_22_GRTRMiOS_111123212_US_iOS_GSLTS_wafb unlim access",
-	"is_paid": true,
-	"af_sub4": "01",
-	"adgroup_id": "6073532011418",
-	"is_mobile_data_terms_signed": true,
-	"af_channel": "Facebook",
-	"af_sub5": null,
-	"media_source": "Facebook Ads",
-	"install_time": "2017-07-19 08:06:56.189",
-	"af_sub2": null,
+  "adset": "s1s3",
+  "af_adset": "mm3",
+  "adgroup": "s1s3",
+  "campaign_id": "6068535534218",
+  "af_status": "Non-organic",
+  "agency": "Test",
+  "af_sub3": null,
+  "af_siteid": null,
+  "adset_id": "6073532011618",
+  "is_fb": true,
+  "is_first_launch": true,
+  "click_time": "2017-07-18 12:55:05",
+  "iscache": false,
+  "ad_id": "6074245540018",
+  "af_sub1": "439223",
+  "campaign": "Comp_22_GRTRMiOS_111123212_US_iOS_GSLTS_wafb unlim access",
+  "is_paid": true,
+  "af_sub4": "01",
+  "adgroup_id": "6073532011418",
+  "is_mobile_data_terms_signed": true,
+  "af_channel": "Facebook",
+  "af_sub5": null,
+  "media_source": "Facebook Ads",
+  "install_time": "2017-07-19 08:06:56.189",
+  "af_sub2": null
+}
 ```
 
 ### Данные дополненные на стороне клиента
 
 ```json
+{
+  "adset": "s1s3",
+  "af_adset": "mm3",
+  "adgroup": "s1s3",
+  "campaign_id": "6068535534218",
+  "af_status": "Non-organic",
+  "agency": "Test",
+  "af_sub3": null,
+  "af_siteid": null,
+  "adset_id": "6073532011618",
+  "is_fb": true,
+  "is_first_launch": true,
+  "click_time": "2017-07-18 12:55:05",
+  "iscache": false,
+  "ad_id": "6074245540018",
+  "af_sub1": "439223",
+  "campaign": "Comp_22_GRTRMiOS_111123212_US_iOS_GSLTS_wafb unlim access",
+  "is_paid": true,
+  "af_sub4": "01",
+  "adgroup_id": "6073532011418",
+  "is_mobile_data_terms_signed": true,
+  "af_channel": "Facebook",
+  "af_sub5": null,
+  "media_source": "Facebook Ads",
+  "install_time": "2017-07-19 08:06:56.189",
+  "af_sub2": null,
   "af_id": "1688042316289-7152592750959506765",
-	"bundle_id": "com.example.app",
-	"os": "Android",
-	"store_id": "com.example.app",
-	"locale": "En",
-	"push_token": "dl28EJCAT4a7UNl86egX-U:APA91bEC1a5aGJL8ZyQHlm-B9togw60MLWP4_zU0ExSXLSa_HiL82Iurj0d-1zJmkMdUcvgCRXTrXtbWQHxmJh49BibLiqZVXPNyrCdZW-_ROTt98f0WCLtt531RYPhWSDOkykcaykE3",
-	"firebase_project_id": "8934278530"
+  "bundle_id": "com.example.app",
+  "os": "Android",
+  "store_id": "com.example.app",
+  "locale": "En",
+  "push_token": "dl28EJCAT4a7UNl86egX-U:APA91bEC1a5aGJL8ZyQHlm-B9togw60MLWP4_zU0ExSXLSa_HiL82Iurj0d-1zJmkMdUcvgCRXTrXtbWQHxmJh49BibLiqZVXPNyrCdZW-_ROTt98f0WCLtt531RYPhWSDOkykcaykE3",
+  "firebase_project_id": "8934278530"
 }
 ```
 
@@ -261,9 +290,9 @@ Bundle ID и Store ID для iOS приложений различаются
 ```json
 Status: 200 (OK)
 { 
-	"ok": true, 
-	"url": "http://link.com/",
-	"expires": 1689002181 
+  "ok": true, 
+  "url": "http://link.com/",
+  "expires": 1689002181 
 }
 ```
 
@@ -279,8 +308,8 @@ Status: 200 (OK)
 ```json
 404 (Not Found)
 { 
-	"ok": false, 
-	"message": "No data" 
+  "ok": false, 
+  "message": "No data" 
 }
 ```
 
