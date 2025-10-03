@@ -1,0 +1,31 @@
+name = "app-offer-config-worker"
+main = "src/index.ts"
+compatibility_date = "2023-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+[env.development]
+name = "app-offer-config-dev"
+kv_namespaces = [
+  { binding = "CONFIG_CACHE", id = "dev-config-cache", preview_id = "dev-config-cache-preview" },
+  { binding = "RATE_LIMITS", id = "dev-rate-limits", preview_id = "dev-rate-limits-preview" }
+]
+
+[env.staging]
+name = "app-offer-config-staging"
+kv_namespaces = [
+  { binding = "CONFIG_CACHE", id = "staging-config-cache", preview_id = "staging-config-cache-preview" },
+  { binding = "RATE_LIMITS", id = "staging-rate-limits", preview_id = "staging-rate-limits-preview" }
+]
+
+[env.production]
+name = "app-offer-config-prod"
+kv_namespaces = [
+  { binding = "CONFIG_CACHE", id = "prod-config-cache", preview_id = "prod-config-cache-preview" },
+  { binding = "RATE_LIMITS", id = "prod-rate-limits", preview_id = "prod-rate-limits-preview" }
+]
+
+# Secrets (set via wrangler secret put)
+# CLOUDFLARE_API_TOKEN
+# FIREBASE_SERVICE_ACCOUNT_KEY
+# APPSFLYER_API_TOKEN
+# ADMIN_API_KEY
