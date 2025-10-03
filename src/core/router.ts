@@ -77,13 +77,18 @@ export class Router {
   private async handleRoot(request: Request, env: Env): Promise<Response> {
     const baseUrl = new URL(request.url).origin;
     
+    // Get system statistics
+    const dbService = new DatabaseService(env);
+    const stats = await dbService.getMobilePhoneRequestStats();
+    const pushStats = await dbService.getPushTokenStats();
+    
     const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Offer Configuration API</title>
+    <title>App Offer Configuration API - Mobile App Management Platform</title>
     <style>
         * {
             margin: 0;
@@ -95,33 +100,49 @@ export class Router {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: #333;
+            line-height: 1.6;
         }
         
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 3rem;
-            max-width: 600px;
-            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
             text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
         
         .logo {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
             color: #667eea;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
         }
         
         .subtitle {
             color: #666;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+        
+        .description {
+            color: #555;
             font-size: 1.1rem;
-            margin-bottom: 2rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
         }
         
         .version {
@@ -131,14 +152,58 @@ export class Router {
             display: inline-block;
             font-size: 0.9rem;
             color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .environment {
+            padding: 0.5rem 1rem;
+            background: #e8f5e8;
+            border-radius: 20px;
+            color: #2d5a2d;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-left: 1rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
             margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-content {
+            color: #666;
         }
         
         .links {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
         
         .link-card {
@@ -153,6 +218,7 @@ export class Router {
             flex-direction: column;
             align-items: center;
             gap: 0.5rem;
+            text-align: center;
         }
         
         .link-card:hover {
@@ -177,84 +243,323 @@ export class Router {
             opacity: 0.8;
         }
         
-        .api-info {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 1.5rem;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
             margin-top: 1rem;
         }
         
-        .api-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #333;
+        .stat-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
         }
         
         .endpoint {
-            background: white;
+            background: #f8f9fa;
             border-radius: 8px;
             padding: 0.75rem;
             margin: 0.5rem 0;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 0.9rem;
             border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .environment {
+        .method {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
             margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background: #e8f5e8;
-            border-radius: 20px;
-            color: #2d5a2d;
-            font-size: 0.9rem;
-            display: inline-block;
         }
         
-        @media (max-width: 600px) {
-            .links {
-                grid-template-columns: 1fr;
+        .feature {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+        
+        .feature-text {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .code-block {
+            background: #f1f3f4;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
             }
             
-            .container {
-                padding: 2rem;
+            .header {
+                padding: 2rem 1rem;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🚀 App Offer Configuration API</div>
-        <div class="subtitle">Configure and manage app offers with ease</div>
-        
-        <div class="version">Version 1.0.0</div>
-        
-        <div class="links">
-            <a href="${baseUrl}/docs/swagger" class="link-card">
-                <div class="link-icon">📚</div>
-                <div class="link-title">Swagger UI</div>
-                <div class="link-desc">Interactive API documentation</div>
-            </a>
-            
-            <a href="${baseUrl}/docs/redoc" class="link-card">
-                <div class="link-icon">📖</div>
-                <div class="link-title">ReDoc</div>
-                <div class="link-desc">Clean API documentation</div>
-            </a>
+        <div class="header">
+            <div class="logo">
+                🚀 App Offer Configuration API
+            </div>
+            <div class="subtitle">Mobile App Management Platform</div>
+            <div class="description">
+                A comprehensive system for managing mobile app configurations, push notifications, and user tracking. 
+                Integrates with AppsFlyer for attribution and Firebase for notifications.
+            </div>
+            <div>
+                <span class="version">Version 1.0.0</span>
+                <span class="environment">Environment: ${env.ENVIRONMENT || 'development'}</span>
+            </div>
         </div>
-        
-        <div class="api-info">
-            <div class="api-title">Available Endpoints</div>
-            <div class="endpoint">POST /api/v1/config - Mobile app configuration</div>
-            <div class="endpoint">POST /api/v1/notifications/send - Send push notification</div>
-            <div class="endpoint">POST /api/v1/notifications/bulk - Send bulk notifications</div>
-            <div class="endpoint">GET /api/v1/notifications/stats - Notification statistics</div>
-            <div class="endpoint">GET /health - Health check</div>
-            <div class="endpoint">GET /health/ready - Readiness check</div>
-            <div class="endpoint">GET /health/live - Liveness check</div>
-            <div class="endpoint">GET /docs/openapi.json - OpenAPI specification</div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">
+                    📚 Documentation
+                </div>
+                <div class="card-content">
+                    <div class="links">
+                        <a href="${baseUrl}/docs/swagger" class="link-card">
+                            <div class="link-icon">📖</div>
+                            <div class="link-title">Swagger UI</div>
+                            <div class="link-desc">Interactive API docs</div>
+                        </a>
+                        <a href="${baseUrl}/docs/redoc" class="link-card">
+                            <div class="link-icon">📋</div>
+                            <div class="link-title">ReDoc</div>
+                            <div class="link-desc">Clean documentation</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    📊 System Statistics
+                </div>
+                <div class="card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">${stats.total}</div>
+                            <div class="stat-label">Total Requests</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${pushStats.active}</div>
+                            <div class="stat-label">Active Tokens</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${stats.recent_count}</div>
+                            <div class="stat-label">Recent (24h)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${Object.keys(pushStats.by_platform).length}</div>
+                            <div class="stat-label">Platforms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="environment">Environment: ${env.ENVIRONMENT || 'development'}</div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">
+                    🔧 API Endpoints
+                </div>
+                <div class="card-content">
+                    <div class="endpoint">
+                        <span><span class="method">POST</span>/api/v1/config</span>
+                        <span>Mobile app configuration</span>
+                    </div>
+                    <div class="endpoint">
+                        <span><span class="method">POST</span>/api/v1/notifications/send</span>
+                        <span>Send push notification</span>
+                    </div>
+                    <div class="endpoint">
+                        <span><span class="method">POST</span>/api/v1/notifications/bulk</span>
+                        <span>Send bulk notifications</span>
+                    </div>
+                    <div class="endpoint">
+                        <span><span class="method">GET</span>/api/v1/notifications/stats</span>
+                        <span>Notification statistics</span>
+                    </div>
+                    <div class="endpoint">
+                        <span><span class="method">GET</span>/health</span>
+                        <span>Health check</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    ⚡ Key Features
+                </div>
+                <div class="card-content">
+                    <div class="features">
+                        <div class="feature">
+                            <div class="feature-icon">📱</div>
+                            <div class="feature-text">Mobile App Configuration</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🔔</div>
+                            <div class="feature-text">Push Notifications</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-text">AppsFlyer Integration</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🔥</div>
+                            <div class="feature-text">Firebase Integration</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🗄️</div>
+                            <div class="feature-text">D1 Database Storage</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">🌐</div>
+                            <div class="feature-text">WebView Management</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                🚀 Quick Start Example
+            </div>
+            <div class="card-content">
+                <p>Send a mobile app configuration request:</p>
+                <div class="code-block">
+curl -X POST ${baseUrl}/api/v1/config \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "af_id": "1688042316289-7152592750959506765",
+    "bundle_id": "com.example.app",
+    "os": "Android",
+    "store_id": "com.example.app",
+    "locale": "en_US",
+    "push_token": "your_firebase_token",
+    "af_status": "Non-organic",
+    "campaign": "Test Campaign",
+    "is_first_launch": true
+  }'
+                </div>
+                <p>Send a push notification:</p>
+                <div class="code-block">
+curl -X POST ${baseUrl}/api/v1/notifications/send \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "token": "your_firebase_token",
+    "title": "Great offer!",
+    "body": "Check out this amazing deal!",
+    "data": {"url": "https://example.com/offer"}
+  }'
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                📈 Request Statistics
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.by_type['offer_config'] || 0}</div>
+                        <div class="stat-label">Offer Configs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.by_type['notification'] || 0}</div>
+                        <div class="stat-label">Notifications</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.by_status['processed'] || 0}</div>
+                        <div class="stat-label">Processed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.by_status['pending'] || 0}</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                🔗 Platform Distribution
+            </div>
+            <div class="card-content">
+                <div class="stats-grid">
+                    ${Object.entries(pushStats.by_platform).map(([platform, count]) => `
+                        <div class="stat-item">
+                            <div class="stat-number">${count}</div>
+                            <div class="stat-label">${platform.toUpperCase()}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>`;
