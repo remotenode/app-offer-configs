@@ -88,11 +88,6 @@ export interface LogEntry {
   };
 }
 
-export interface RateLimitInfo {
-  count: number;
-  resetTime: number;
-  limit: number;
-}
 
 export interface CacheEntry<T> {
   data: T;
@@ -103,7 +98,6 @@ export interface CacheEntry<T> {
 // Environment variables interface
 export interface Env {
   CONFIG_CACHE: KVNamespace;
-  RATE_LIMITS: KVNamespace;
   CLOUDFLARE_API_TOKEN: string;
   FIREBASE_SERVICE_ACCOUNT_KEY: string;
   APPSFLYER_API_TOKEN: string;
