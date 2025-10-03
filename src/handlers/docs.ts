@@ -582,49 +582,12 @@ export class DocsHandler {
 
   async handleMarkdownFile(filePath: string): Promise<Response> {
     try {
-      // In a real implementation, you would read the markdown file from storage
-      // For now, we'll return a placeholder response
-      const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${filePath} - App Offer Configs</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-        .content { padding: 30px; }
-        .back-link { color: #2563eb; text-decoration: none; margin-bottom: 20px; display: inline-block; }
-        .markdown-content { line-height: 1.6; }
-        .markdown-content h1, .markdown-content h2, .markdown-content h3 { color: #374151; }
-        .markdown-content code { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
-        .markdown-content pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📄 ${filePath}</h1>
-        </div>
-        <div class="content">
-            <a href="/docs/markdown" class="back-link">← Back to Documentation</a>
-            <div class="markdown-content">
-                <p><strong>Note:</strong> This is a placeholder for the markdown file: <code>${filePath}</code></p>
-                <p>In a real implementation, this would render the actual markdown content from the file.</p>
-                <p>To implement this properly, you would need to:</p>
-                <ul>
-                    <li>Store markdown files in a KV store or R2 bucket</li>
-                    <li>Use a markdown parser like <code>marked</code> to convert to HTML</li>
-                    <li>Apply proper styling and syntax highlighting</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</body>
-</html>`;
-
+      // Read markdown file from docs directory
+      const markdownContent = await this.readMarkdownFile(filePath);
+      const htmlContent = marked(markdownContent);
+      
+      const html = this.wrapMarkdownInHTML(htmlContent, filePath);
+      
       return new Response(html, {
         headers: {
           'Content-Type': 'text/html',
@@ -643,5 +606,44 @@ export class DocsHandler {
         },
       });
     }
+  }
+
+  private async readMarkdownFile(filePath: string): Promise<string> {
+    // In a real implementation, you would read from KV store or R2
+    // For now, return a simple message
+    return `# ${filePath}\n\nThis is a placeholder for the markdown file: \`${filePath}\`\n\nTo implement this properly, store markdown files in a KV store or R2 bucket and read them here.`;
+  }
+
+  private wrapMarkdownInHTML(content: string, title: string): string {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - App Offer Configs</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; }
+        .back-link { color: #2563eb; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .markdown-content { line-height: 1.6; }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { color: #374151; }
+        .markdown-content code { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+        .markdown-content pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 ${title}</h1>
+        </div>
+        <div class="content">
+            <a href="/docs/markdown" class="back-link">← Back to Documentation</a>
+            <div class="markdown-content">${content}</div>
+        </div>
+    </div>
+</body>
+</html>`;
   }
 }
