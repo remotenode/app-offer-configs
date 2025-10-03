@@ -584,7 +584,7 @@ export class DocsHandler {
     try {
       // Read markdown file from docs directory
       const markdownContent = await this.readMarkdownFile(filePath);
-      const htmlContent = marked(markdownContent);
+      const htmlContent = await marked(markdownContent);
       
       const html = this.wrapMarkdownInHTML(htmlContent, filePath);
       

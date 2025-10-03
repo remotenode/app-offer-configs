@@ -5,7 +5,7 @@ import { Env } from './types';
 
 // Main worker entry point
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;

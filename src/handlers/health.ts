@@ -44,10 +44,9 @@ export class HealthHandler {
         uptime: Date.now() - this.startTime,
         checks: {
           memory: {
-            status: 'unhealthy',
+            status: 'unhealthy' as const,
             usage: 0,
             limit: 0,
-            error: 'Health check failed',
           },
         },
       };
