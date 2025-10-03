@@ -2,6 +2,7 @@ import { Env } from '../types';
 import { ConfigHandler } from '../handlers/config';
 import { HealthHandler } from '../handlers/health';
 import { DocsHandler } from '../handlers/docs';
+import { NotificationHandler } from '../handlers/notifications';
 
 export interface Route {
   path: string;
@@ -14,11 +15,13 @@ export class Router {
   private configHandler: ConfigHandler;
   private healthHandler: HealthHandler;
   private docsHandler: DocsHandler;
+  private notificationHandler: NotificationHandler;
 
   constructor(env: Env) {
     this.configHandler = new ConfigHandler(env);
     this.healthHandler = new HealthHandler(env);
     this.docsHandler = new DocsHandler(env);
+    this.notificationHandler = new NotificationHandler(env);
     this.setupRoutes();
   }
 
@@ -26,6 +29,11 @@ export class Router {
     // API Routes
     this.addRoute('POST', '/api/v1/config', this.configHandler.handleConfigRequest.bind(this.configHandler));
     this.addRoute('OPTIONS', '/api/v1/config', this.configHandler.handleOptionsRequest.bind(this.configHandler));
+
+    // Notification Routes
+    this.addRoute('POST', '/api/v1/notifications/send', this.notificationHandler.sendNotification.bind(this.notificationHandler));
+    this.addRoute('POST', '/api/v1/notifications/bulk', this.notificationHandler.sendBulkNotifications.bind(this.notificationHandler));
+    this.addRoute('GET', '/api/v1/notifications/stats', this.notificationHandler.getNotificationStats.bind(this.notificationHandler));
 
     // Health Routes
     this.addRoute('GET', '/health', this.healthHandler.handleHealthCheck.bind(this.healthHandler));
@@ -236,7 +244,10 @@ export class Router {
         
         <div class="api-info">
             <div class="api-title">Available Endpoints</div>
-            <div class="endpoint">POST /api/v1/config - Configure app offers</div>
+            <div class="endpoint">POST /api/v1/config - Mobile app configuration</div>
+            <div class="endpoint">POST /api/v1/notifications/send - Send push notification</div>
+            <div class="endpoint">POST /api/v1/notifications/bulk - Send bulk notifications</div>
+            <div class="endpoint">GET /api/v1/notifications/stats - Notification statistics</div>
             <div class="endpoint">GET /health - Health check</div>
             <div class="endpoint">GET /health/ready - Readiness check</div>
             <div class="endpoint">GET /health/live - Liveness check</div>
@@ -263,6 +274,9 @@ export class Router {
       message: `The requested resource ${path} was not found`,
       availableEndpoints: [
         'POST /api/v1/config',
+        'POST /api/v1/notifications/send',
+        'POST /api/v1/notifications/bulk',
+        'GET /api/v1/notifications/stats',
         'GET /health',
         'GET /health/ready',
         'GET /health/live',

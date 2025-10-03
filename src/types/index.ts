@@ -128,3 +128,75 @@ export interface PushTokenResponse {
   data?: PushToken;
   token_id?: number;
 }
+
+// Mobile App Configuration Types
+export interface AppsFlyerConversionData {
+  adset?: string;
+  af_adset?: string;
+  adgroup?: string;
+  campaign_id?: string;
+  af_status?: string;
+  agency?: string;
+  af_sub3?: string | null;
+  af_siteid?: string | null;
+  adset_id?: string;
+  is_fb?: boolean;
+  is_first_launch?: boolean;
+  click_time?: string;
+  iscache?: boolean;
+  ad_id?: string;
+  af_sub1?: string;
+  campaign?: string;
+  is_paid?: boolean;
+  af_sub4?: string;
+  adgroup_id?: string;
+  is_mobile_data_terms_signed?: boolean;
+  af_channel?: string;
+  af_sub5?: string | null;
+  media_source?: string;
+  install_time?: string;
+  af_sub2?: string | null;
+}
+
+export interface MobileAppConfigRequest {
+  // AppsFlyer conversion data (all parameters from AppsFlyer)
+  ...AppsFlyerConversionData;
+  
+  // Additional client data
+  af_id: string; // AppsFlyer ID
+  bundle_id: string; // Bundle ID or Package Name
+  os: 'Android' | 'iOS'; // Platform
+  store_id: string; // Store ID
+  locale: string; // Device locale
+  push_token?: string; // Firebase push token
+  firebase_project_id?: string; // Firebase project ID
+}
+
+export interface MobileAppConfigResponse {
+  ok: boolean;
+  message?: string;
+  url?: string; // URL for WebView
+  expires?: number; // Expiration timestamp
+}
+
+export interface NotificationPayload {
+  message: {
+    token: string;
+    notification: {
+      title: string;
+      body: string;
+    };
+    data: {
+      url?: string;
+    };
+  };
+}
+
+export interface NotificationRequest {
+  token: string;
+  title: string;
+  body: string;
+  image_url?: string;
+  icon_url?: string;
+  data?: Record<string, string>;
+}
