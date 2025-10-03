@@ -1,0 +1,19 @@
+name = "app-offer-config-worker"
+main = "src/index.ts"
+compatibility_date = "2023-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+[env.development]
+name = "app-offer-config-dev"
+
+[env.staging]
+name = "app-offer-config-staging"
+
+[env.production]
+name = "app-offer-config-prod"
+
+# Secrets (set via wrangler secret put)
+# CLOUDFLARE_API_TOKEN
+# FIREBASE_SERVICE_ACCOUNT_KEY
+# APPSFLYER_API_TOKEN
+# ADMIN_API_KEY
