@@ -64,8 +64,72 @@ export class DatabaseExample {
       const stats = await this.databaseService.getMobilePhoneRequestStats();
       console.log('Database statistics:', stats);
 
+      // Demonstrate push token functionality
+      await this.demonstratePushTokens();
+
     } catch (error) {
       console.error('Error in database demonstration:', error);
+    }
+  }
+
+  async demonstratePushTokens() {
+    try {
+      console.log('\n=== Push Token Demonstration ===');
+
+      // Store push tokens
+      const iosTokenResult = await this.databaseService.storePushToken({
+        phone_number: '+1234567890',
+        push_token: 'ios_push_token_demo_123',
+        platform: 'ios',
+        app_version: '1.0.0',
+        device_id: 'device_ios_demo',
+        is_active: true,
+      });
+      console.log('iOS push token stored:', iosTokenResult.success);
+
+      const androidTokenResult = await this.databaseService.storePushToken({
+        phone_number: '+1234567890',
+        push_token: 'android_push_token_demo_456',
+        platform: 'android',
+        app_version: '1.0.0',
+        device_id: 'device_android_demo',
+        is_active: true,
+      });
+      console.log('Android push token stored:', androidTokenResult.success);
+
+      // Get push tokens by phone number
+      const phoneTokens = await this.databaseService.getPushTokensByPhone('+1234567890');
+      console.log('Push tokens for phone:', phoneTokens.length);
+
+      // Get push tokens by platform
+      const iosTokens = await this.databaseService.getPushTokensByPlatform('ios');
+      console.log('iOS push tokens:', iosTokens.length);
+
+      // Update token status
+      if (iosTokenResult.token_id) {
+        const updateResult = await this.databaseService.updatePushTokenStatus(
+          'ios_push_token_demo_123',
+          false
+        );
+        console.log('Token status updated:', updateResult.success);
+      }
+
+      // Update last used
+      const lastUsedResult = await this.databaseService.updatePushTokenLastUsed(
+        'android_push_token_demo_456'
+      );
+      console.log('Last used updated:', lastUsedResult.success);
+
+      // Get push token statistics
+      const pushStats = await this.databaseService.getPushTokenStats();
+      console.log('Push token statistics:', pushStats);
+
+      // Get all active push tokens
+      const activeTokens = await this.databaseService.getActivePushTokens();
+      console.log('Active push tokens:', activeTokens.length);
+
+    } catch (error) {
+      console.error('Error in push token demonstration:', error);
     }
   }
 

@@ -108,3 +108,23 @@ export interface MobilePhoneRequestResponse {
   data?: MobilePhoneRequest;
   request_id?: number;
 }
+
+export interface PushToken {
+  id?: number;
+  phone_number: string;
+  push_token: string;
+  platform: 'ios' | 'android' | 'web';
+  app_version?: string;
+  device_id?: string;
+  is_active: boolean;
+  last_used?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PushTokenResponse {
+  success: boolean;
+  message?: string;
+  data?: PushToken;
+  token_id?: number;
+}

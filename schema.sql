@@ -27,6 +27,27 @@ CREATE INDEX IF NOT EXISTS idx_created_at ON mobile_phone_requests(created_at);
 CREATE INDEX IF NOT EXISTS idx_phone_status ON mobile_phone_requests(phone_number, status);
 CREATE INDEX IF NOT EXISTS idx_type_status ON mobile_phone_requests(request_type, status);
 
+-- Create push_tokens table
+CREATE TABLE IF NOT EXISTS push_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  phone_number TEXT NOT NULL,
+  push_token TEXT NOT NULL UNIQUE,
+  platform TEXT NOT NULL CHECK (platform IN ('ios', 'android', 'web')),
+  app_version TEXT,
+  device_id TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT 1,
+  last_used DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for push_tokens table
+CREATE INDEX IF NOT EXISTS idx_push_phone_number ON push_tokens(phone_number);
+CREATE INDEX IF NOT EXISTS idx_push_token ON push_tokens(push_token);
+CREATE INDEX IF NOT EXISTS idx_push_platform ON push_tokens(platform);
+CREATE INDEX IF NOT EXISTS idx_push_active ON push_tokens(is_active);
+CREATE INDEX IF NOT EXISTS idx_push_phone_active ON push_tokens(phone_number, is_active);
+
 -- Example data (optional - for testing)
 INSERT OR IGNORE INTO mobile_phone_requests (
   phone_number,
@@ -67,4 +88,38 @@ INSERT OR IGNORE INTO mobile_phone_requests (
   datetime('now'),
   'pending',
   '{"issue_type": "technical", "priority": "high"}'
+);
+
+-- Example push token data (optional - for testing)
+INSERT OR IGNORE INTO push_tokens (
+  phone_number,
+  push_token,
+  platform,
+  app_version,
+  device_id,
+  is_active
+) VALUES 
+(
+  '+1234567890',
+  'ios_push_token_1234567890abcdef',
+  'ios',
+  '1.0.0',
+  'device_ios_123',
+  1
+),
+(
+  '+9876543210',
+  'android_push_token_9876543210fedcba',
+  'android',
+  '1.0.0',
+  'device_android_456',
+  1
+),
+(
+  '+5555555555',
+  'web_push_token_5555555555abcdef',
+  'web',
+  '1.0.0',
+  'device_web_789',
+  1
 );
